@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/app/src/main/java/space/peihao/chuanchuan/MainActivity.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/app/src/main/java/space/peihao/chuanchuan/constant" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/app/src/main/java/space/peihao/chuanchuan/constant/ConstantUtil.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/app/src/main/java/space/peihao/chuanchuan/fruit" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/app/src/main/java/space/peihao/chuanchuan/fruit/GameFruitFactory.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/app/src/main/java/space/peihao/chuanchuan/gameobj" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/app/src/main/java/space/peihao/chuanchuan/gameobj/GameObjct.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/app/src/main/java/space/peihao/chuanchuan/sound" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/app/src/main/java/space/peihao/chuanchuan/sound/GameSoundPool.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/app/src/main/java/space/peihao/chuanchuan/view" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/app/src/main/java/space/peihao/chuanchuan/view/BaseView.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/app/src/main/java/space/peihao/chuanchuan/view/EndView.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/app/src/main/java/space/peihao/chuanchuan/view/EndlessView.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/app/src/main/java/space/peihao/chuanchuan/view/MainView.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/app/src/main/java/space/peihao/chuanchuan/view/RandView.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/app/src/main/java/space/peihao/chuanchuan/view/ReadyView.java" charset="UTF-8" />
+    <file url="PROJECT" charset="UTF-8" />
+  </component>
+</project>
