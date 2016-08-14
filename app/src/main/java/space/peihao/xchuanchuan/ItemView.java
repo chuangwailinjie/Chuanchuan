@@ -6,6 +6,8 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import java.util.Random;
+
 import tyrantgit.explosionfield.ExplosionField;
 
 /**
@@ -23,29 +25,35 @@ public class ItemView extends ImageView implements View.OnClickListener{
     int resourceId;
     int itemID;
     ExplosionField efx;
+    int resourcesID[]={R.drawable.x1,R.drawable.x2,R.drawable.x3,R.drawable.x4,R.drawable.x5,R.drawable.x6,R.drawable.x7,R.drawable.x8};
+    //Item状态信息，state=0默认显示，state=1不可见
+    int state;
+    Random random=new Random();
 
     public ItemView(Context context,ExplosionField ef) {
         super(context);
         efx=ef;
-        //this.setOnClickListener(this);
+        setResourceId();
     }
 
+    public int getState() {
+        return state;
+    }
 
+    public void setState(int state) {
+        this.state = state;
+    }
 
     public int getResourceId() {
         return resourceId;
     }
 
-    public void setResourceId(int resourceId) {
-        this.resourceId = resourceId;
-    }
-
-    public int getItemID() {
-        return itemID;
-    }
-
-    public void setItemID(int itemID) {
-        this.itemID = itemID;
+    public void setResourceId() {
+        state=0;
+        int id=random.nextInt(4);
+        this.resourceId =id;
+        this.setImageResource(resourcesID[id]);
+        this.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -56,6 +64,5 @@ public class ItemView extends ImageView implements View.OnClickListener{
     @Override
     public void onClick(View v) {
         efx.explode(this);
-        Toast.makeText(getContext(),"X:"+getX()+"Y:"+getY(),Toast.LENGTH_SHORT).show();
     }
 }

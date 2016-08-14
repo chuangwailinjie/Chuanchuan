@@ -23,19 +23,46 @@ import tyrantgit.explosionfield.ExplosionField;
  */
 public class ChuanchuanLayout extends RelativeLayout implements View.OnTouchListener{
 
-    int row=6;
-    int column=5;
-    int padding,margin;
-    static ItemView items[];
-    int size[]=new int[4];
-    ExplosionField efx;
+    private int row=6;
+    private int column=5;
+    private int padding,margin;
+    private ItemView items[];
+    private int size[]=new int[4];
+    private ExplosionField efx;
+    private int score=0;
+    private int addscore[]={10,35,75,150,300};
+    //当第一次调用onMeasure时会...
+    private boolean isOnce=false;
 
-    public List<ItemView> getList() {
-        return list;
+    //callback接口设置
+    private onChuanchaunListener chuanlistener;
+
+    //list中保存屏幕中column*row个ItemView对象
+    ArrayList<ItemView> list;
+
+    //currentList保存当前叉子上的ItemView
+    ArrayList<ItemView> currentList;
+
+    public interface onChuanchaunListener{
+        void onScorechange(int score,int length);
+        void gameOver();
     }
 
-    List<ItemView> list;
+    public void restart(){
+        currentList.clear();
+        list.clear();
+        score=0;
+        for(ItemView item:items){
+            item=new ItemView(getContext(),efx);
+        }
+        if(chuanlistener!=null)
+            chuanlistener.onScorechange(0,0);
+        isOnce=false;
+    }
 
+    public void setLayoutListener(onChuanchaunListener listener){
+        this.chuanlistener=listener;
+    }
     public ChuanchuanLayout(Context context) {
         this(context,null);
     }
@@ -55,51 +82,51 @@ public class ChuanchuanLayout extends RelativeLayout implements View.OnTouchList
                 getResources().getDisplayMetrics());
         padding = min(getPaddingLeft(), getPaddingRight(), getPaddingTop(), getPaddingBottom());
         list=new ArrayList<>();
+        currentList=new ArrayList<>();
         this.setOnTouchListener(this);
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        if(items==null){
-            items=new ItemView[column*row];
-        }
-        //设置layout长宽
-        WindowManager wm = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
-        int height = wm.getDefaultDisplay().getHeight();
-        size[0]=getMeasuredWidth();
-        size[1]=(int)(height*0.7);
-        //设置item长宽
-        size[2]=(size[0]-padding*2-(column-1)*margin)/column;
-        size[3]=(size[1]-padding*2-(row-1)*margin)/row;
+        if(!isOnce) {
+            if (items == null) {
+                items = new ItemView[column * row];
+                //设置layout长宽
+                WindowManager wm = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
+                int height = wm.getDefaultDisplay().getHeight();
+                size[0] = getMeasuredWidth();
+                size[1] = (int) (height * 0.7);
+                //设置item长宽
+                size[2] = (size[0] - padding * 2 - (column - 1) * margin) / column;
+                size[3] = (size[1] - padding * 2 - (row - 1) * margin) / row;
 
 
+                for (int i = 0; i < items.length; i++) {
+                    ItemView item = new ItemView(getContext(), efx);
+                    items[i] = item;
 
-        for(int i=0;i<items.length;i++){
-            ItemView item=new ItemView(getContext(),efx);
-            items[i]=item;
-            item.setId(i+1);
-            item.setFocusable(true);
-            item.setImageResource(R.drawable.x1);
-            item.setScaleType(ImageView.ScaleType.FIT_XY);
-            RelativeLayout.LayoutParams  layoutParams=new LayoutParams(size[2],size[3]);
+                    //格局Id设置布局
+                    item.setId(i + 1);
+                    item.setScaleType(ImageView.ScaleType.FIT_XY);
+                    RelativeLayout.LayoutParams layoutParams = new LayoutParams(size[2], size[3]);
 
-            if((i+1)%column!=0)//如果不是最后一列
-                layoutParams.rightMargin=margin;
-            if(i%column!=0) {//如果不是第一列 设置相对位置
-                layoutParams.addRule(RIGHT_OF,items[i-1].getId());
+                    if ((i + 1) % column != 0)//如果不是最后一列
+                        layoutParams.rightMargin = margin;
+                    if (i % column != 0) {//如果不是第一列 设置相对位置
+                        layoutParams.addRule(RIGHT_OF, items[i - 1].getId());
+                    }
+
+                    if ((i + 1) > column) {//如果Item不在第一行，则设置margin、相对位置
+                        layoutParams.topMargin = margin;
+                        layoutParams.addRule(BELOW, items[i - column].getId());
+                    }
+                    addView(item, layoutParams);
+                    list.add(item);
+                }
             }
-
-            if((i+1)>column){//如果Item不在第一行，则设置margin、相对位置
-                layoutParams.topMargin=margin;
-                layoutParams.addRule(BELOW,items[i-column].getId());
-            }
-            addView(item,layoutParams);
-            list.add(item);
         }
-        /*for(ItemView iv:list){
-            iv.setOnClickListener(mylistener);
-        }*/
+        isOnce=true;
         setMeasuredDimension(size[0],size[1]);
     }
 
@@ -142,23 +169,60 @@ public class ChuanchuanLayout extends RelativeLayout implements View.OnTouchList
                 break;
             case MotionEvent.ACTION_UP:
                 //将手指点击的区域对应的水果手动添加到cFruits
-                List<ItemView> list1=new ArrayList<>();
                 int i=0;
-                Log.e("xxxxx",""+eventx+" "+list.get(0).getX()+" "+list.get(0).weight);
                 for(;i<list.size();i++){
                     ItemView iv=list.get(i);
                     float x=iv.getX();
                     float y=iv.getY();
                     if(eventx>x&&eventx<x+iv.getMeasuredWidth()&&eventy>y&&eventy<y+iv.getMeasuredHeight()) {
-                        Log.e("xxxxxx",""+i);
                         for(;i<column*row;i+=column){
-                            efx.explode(list.get(i));
+                            if(list.get(i).getState()==0){
+                                efx.explode(list.get(i));
+                                list.get(i).setVisibility(View.INVISIBLE);
+                                currentList.add(list.get(i));
+                            }
+                            list.get(i).setState(1);
                         }
                         break;
                     }
                 }
+
+                checkGame();
+                chuanlistener.onScorechange(score,currentList.size());
+                checkScore();
                 break;
         }
         return true;
+    }
+
+    //检测游戏进度
+    private void checkGame(){
+        for(int i=currentList.size()-1;i>=2;i--){
+            int chainLength=0;
+            for(int j=i-1;j>=0;j--){
+                if(currentList.get(i).getResourceId()==currentList.get(j).getResourceId()){
+                    chainLength++;
+                }else{
+                    break;
+                }
+            }
+            if(chainLength>1){
+                score+=addscore[chainLength-2];
+                for(int x=0;x<=chainLength;x++){
+                    currentList.remove(i-x);
+                }
+                i=currentList.size();
+            }
+            else{
+                continue;
+            }
+        }
+    }
+
+    //维持分数
+    private void checkScore(){
+        if(currentList.size()>=7){
+            chuanlistener.gameOver();
+        }
     }
 }
