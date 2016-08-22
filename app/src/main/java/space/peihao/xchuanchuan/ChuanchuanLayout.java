@@ -1,20 +1,20 @@
 package space.peihao.xchuanchuan;
 
-import android.content.ClipData;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.PixelFormat;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
-import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import tyrantgit.explosionfield.ExplosionField;
 
@@ -23,7 +23,7 @@ import tyrantgit.explosionfield.ExplosionField;
  */
 public class ChuanchuanLayout extends RelativeLayout implements View.OnTouchListener{
 
-    private int row=6;
+    private int row=5;
     private int column=5;
     private int padding,margin;
     private ItemView items[];
@@ -33,6 +33,12 @@ public class ChuanchuanLayout extends RelativeLayout implements View.OnTouchList
     private int addscore[]={10,35,75,150,300};
     //当第一次调用onMeasure时会...
     private boolean isOnce=false;
+
+    private int height;
+
+    Bitmap back1,back2;
+
+    private ImageView tail,tail_x1;
 
     //callback接口设置
     private onChuanchaunListener chuanlistener;
@@ -46,19 +52,9 @@ public class ChuanchuanLayout extends RelativeLayout implements View.OnTouchList
     public interface onChuanchaunListener{
         void onScorechange(int score,int length);
         void gameOver();
+        void passGame();
     }
 
-    public void restart(){
-        currentList.clear();
-        list.clear();
-        score=0;
-        for(ItemView item:items){
-            item=new ItemView(getContext(),efx);
-        }
-        if(chuanlistener!=null)
-            chuanlistener.onScorechange(0,0);
-        isOnce=false;
-    }
 
     public void setLayoutListener(onChuanchaunListener listener){
         this.chuanlistener=listener;
@@ -89,14 +85,14 @@ public class ChuanchuanLayout extends RelativeLayout implements View.OnTouchList
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        WindowManager wm = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
+        this.height = wm.getDefaultDisplay().getHeight();
         if(!isOnce) {
             if (items == null) {
                 items = new ItemView[column * row];
                 //设置layout长宽
-                WindowManager wm = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
-                int height = wm.getDefaultDisplay().getHeight();
                 size[0] = getMeasuredWidth();
-                size[1] = (int) (height * 0.7);
+                size[1] = (int) (height * 0.6);
                 //设置item长宽
                 size[2] = (size[0] - padding * 2 - (column - 1) * margin) / column;
                 size[3] = (size[1] - padding * 2 - (row - 1) * margin) / row;
@@ -125,9 +121,18 @@ public class ChuanchuanLayout extends RelativeLayout implements View.OnTouchList
                     list.add(item);
                 }
             }
+            if(tail==null){
+                tail=new ImageView(getContext());
+                tail.setImageResource(R.drawable.stick_tail);
+                RelativeLayout.LayoutParams layoutParams = new LayoutParams(size[0], height);
+                layoutParams.addRule(CENTER_HORIZONTAL);
+                layoutParams.addRule(BELOW,items[0].getId());
+                addView(tail,layoutParams);
+            }
         }
+        tail.setY((int)(0.6*height));
         isOnce=true;
-        setMeasuredDimension(size[0],size[1]);
+        setMeasuredDimension(size[0],height);
     }
 
     int min(int...props){
@@ -166,8 +171,13 @@ public class ChuanchuanLayout extends RelativeLayout implements View.OnTouchList
         float eventy=event.getY();
         switch(event.getAction()){
             case MotionEvent.ACTION_DOWN:
+                tail.setY(eventy);
+                tail.setX(eventx-tail.getMeasuredWidth()/2);
                 break;
             case MotionEvent.ACTION_UP:
+                tail.setY((int)(0.6*height));
+                tail.setX((int)(0.5*getMeasuredWidth()-tail.getMeasuredWidth()/2));
+                Log.e("xxxxx","*"+tail.getY());
                 //将手指点击的区域对应的水果手动添加到cFruits
                 int i=0;
                 for(;i<list.size();i++){
@@ -224,5 +234,27 @@ public class ChuanchuanLayout extends RelativeLayout implements View.OnTouchList
         if(currentList.size()>=7){
             chuanlistener.gameOver();
         }
+        boolean pass=false;
+        for(ItemView item:list){
+            if(item.getState()==0)
+                pass=true;
+        }
+        if(!pass)
+            chuanlistener.passGame();
+    }
+
+    public static Bitmap drawableToBitmap(Drawable drawable,int...props) {
+
+        // 取 drawable 的颜色格式
+        Bitmap.Config config = drawable.getOpacity() != PixelFormat.OPAQUE ? Bitmap.Config.ARGB_8888
+                : Bitmap.Config.RGB_565;
+        // 建立对应 bitmap
+        Bitmap bitmap = Bitmap.createBitmap(props[2], props[3], config);
+        // 建立对应 bitmap 的画布
+        Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(props[0], props[1], props[2], props[3]);
+        // 把 drawable 内容画到画布中
+        drawable.draw(canvas);
+        return bitmap;
     }
 }
